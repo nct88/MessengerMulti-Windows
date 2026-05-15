@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.1] - 2026-05-15
+### Cải tiến
+- Cập nhật URL máy chủ kiểm tra trạng thái Donate.
+- Cải thiện bảo mật cho URL máy chủ trên mã nguồn mở.
+
 ## [1.3.0] - 2026-05-05
 ### Sửa lỗi nghiêm trọng
 - **🔧 Sửa lỗi đăng nhập sai tài khoản (Session Isolation):** Khắc phục lỗi khi đăng nhập tài khoản A nhưng hiển thị tài khoản B. Nguyên nhân: cookies/session cũ của partition bị tái sử dụng khi tạo profile mới hoặc khi session bị lỗi.

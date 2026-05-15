@@ -846,7 +846,7 @@ app.whenReady().then(() => {
       }
 
       if (!hwid || hwid === 'UNKNOWN') {
-        shell.openExternal('https://d.truong.it/donate');
+        shell.openExternal('https://truong.me/donate');
         return;
       }
 
@@ -867,7 +867,14 @@ app.whenReady().then(() => {
       if (shouldShowDonate) {
         try {
           const apiResult = await new Promise((resolve, reject) => {
-            const url = `https://donate-api.truong-it.workers.dev/hwid/check?id=${encodeURIComponent(hwid)}`;
+            let apiUrl = 'https://donate-api.example.com/donate_check';
+            try {
+              const envData = fs.readFileSync(path.join(__dirname, '.env'), 'utf8');
+              const match = envData.match(/DONATE_API_URL=(.+)/);
+              if (match) apiUrl = match[1].trim();
+            } catch (e) {}
+
+            const url = `${apiUrl}?hwid=${encodeURIComponent(hwid)}`;
             https.get(url, { timeout: 5000 }, (res) => {
               let data = '';
               res.on('data', chunk => data += chunk);
@@ -889,11 +896,11 @@ app.whenReady().then(() => {
       }
 
       if (shouldShowDonate) {
-        shell.openExternal(`https://d.truong.it/donate?hwid=${encodeURIComponent(hwid)}`);
+        shell.openExternal(`https://truong.me/donate?hwid=${encodeURIComponent(hwid)}`);
       }
     } catch {
       // Fallback: mở donate bình thường nếu có lỗi bất kỳ
-      shell.openExternal('https://d.truong.it/donate');
+      shell.openExternal('https://truong.me/donate');
     }
   })();
 

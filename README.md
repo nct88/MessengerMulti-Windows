@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://nct88.github.io/portfolio/">🌐 Portfolio</a> ·
-  <a href="https://nct88.github.io/portfolio/donate/">❤️ Ủng hộ</a> ·
+  <a href="https://truong.me/donate/">❤️ Ủng hộ</a> ·
   <a href="https://t.me/congtruongit">💬 Telegram</a> ·
   <a href="https://fb.me/congtruongit">📘 Facebook</a>
 </p>
@@ -24,9 +24,9 @@
   <img src="preview.png" alt="Messlỏ Preview" style="max-width: 100%; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);"/>
 </p>
 
-## ✨ Tính năng nổi bật (Bản cập nhật v1.3.0)
+## ✨ Tính năng nổi bật (Bản cập nhật v1.3.1)
 
-### 🆕 Mới trong v1.3.0
+### 🆕 Mới trong v1.3.1
 - 🔧 **Sửa lỗi đăng nhập sai tài khoản** — Khắc phục lỗi nghiêm trọng khi login tài khoản A nhưng hiển thị tài khoản B do session/cookie bị trộn lẫn.
 - 🔓 **Nút "Đăng xuất & Đăng nhập lại"** — Click phải vào nick → nhấn nút đăng xuất để xóa sạch session và đăng nhập tài khoản khác ngay lập tức.
 - 🧹 **Tự động dọn session khi tạo profile mới** — Đảm bảo mỗi nick mới luôn có session sạch 100%, không bao giờ dùng lại cookie cũ.
@@ -72,7 +72,7 @@ File thành phẩm sẽ xuất hiện trong thư mục `dist/`.
 ```bash
 npm run build -p always
 ```
-Sau đó tạo Release mới trên Github và đính kèm 2 tệp trong thư mục `dist`: `Messlỏ Setup 1.3.0.exe` và `latest.yml`.
+Sau đó tạo Release mới trên Github và đính kèm 2 tệp trong thư mục `dist`: `Messlỏ Setup 1.3.1.exe` và `latest.yml`.
 
 ## 📂 Cấu trúc dự án
 
@@ -92,7 +92,7 @@ Sau đó tạo Release mới trên Github và đính kèm 2 tệp trong thư m�
 
 ### ❤️ Ủng hộ tác giả
 
-Nếu bạn thấy công cụ quản lý siêu tốc này giúp ích cho công việc của bạn, hãy cân nhắc [ủng hộ truong.it](https://nct88.github.io/portfolio/donate/) để tiếp thêm động lực cho mình duy trì và nâng cấp nhé!
+Nếu bạn thấy công cụ quản lý siêu tốc này giúp ích cho công việc của bạn, hãy cân nhắc [ủng hộ truong.it](https://truong.me/donate/) để tiếp thêm động lực cho mình duy trì và nâng cấp nhé!
 
 ---
 
