@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://nct88.github.io/portfolio/">🌐 Portfolio</a> ·
+  <a href="https://truong.me/">🌐 Portfolio</a> ·
   <a href="https://truong.me/donate/">❤️ Ủng hộ</a> ·
   <a href="https://t.me/congtruongit">💬 Telegram</a> ·
   <a href="https://fb.me/congtruongit">📘 Facebook</a>

@@ -4,8 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [1.3.1] - 2026-05-15
 ### Cải tiến
-- Cập nhật URL máy chủ kiểm tra trạng thái Donate.
-- Cải thiện bảo mật cho URL máy chủ trên mã nguồn mở.
+- Fix một số lỗi nhỏ và cập nhật liên kết.
 
 ## [1.3.0] - 2026-05-05
 ### Sửa lỗi nghiêm trọng
