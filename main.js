@@ -35,7 +35,7 @@ let downloadCounter = 0;
 const MESSENGER_URL = 'https://www.facebook.com/messages';
 const APP_ID = 'com.messenger.premium';
 const USER_AGENT =
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36';
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.6261.156 Safari/537.36';
 
 // ============================================================
 //  CHỐNG CHẠY TRÙNG LẶP (Single Instance Lock)
@@ -326,12 +326,62 @@ function setupWebContents(contents, profileId) {
   // Setup download handler for this view's session
   setupDownloadHandler(contents.session);
 
+  // ── Danh sách domain được phép mở popup trong app (OAuth, login, v.v.) ──
+  const ALLOWED_POPUP_DOMAINS = [
+    'facebook.com', 'messenger.com', 'fbcdn.net',
+    'accounts.google.com', 'google.com/o/oauth2',  // Google OAuth
+    'appleid.apple.com',                            // Apple Sign-In
+  ];
+
   contents.setWindowOpenHandler(({ url }) => {
-    if (url.includes('facebook.com') || url.includes('messenger.com') || url.includes('fbcdn.net')) {
-      return { action: 'allow' };
+    // Cho phép các domain OAuth/login mở popup bên trong app
+    const isAllowed = ALLOWED_POPUP_DOMAINS.some(domain => url.includes(domain));
+    if (isAllowed) {
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: {
+          width: 500,
+          height: 700,
+          title: 'Đăng nhập',
+          autoHideMenuBar: true,
+          parent: mainWindow,
+          modal: false,
+          webPreferences: {
+            // Kế thừa session/partition từ BrowserView cha (QUAN TRỌNG cho OAuth)
+            // Electron tự động dùng cùng session nếu không chỉ định partition
+            nodeIntegration: false,
+            contextIsolation: true,
+          },
+        },
+      };
     }
     shell.openExternal(url);
     return { action: 'deny' };
+  });
+
+  // ── Xử lý OAuth redirect: tự đóng popup khi quay về Facebook ──
+  contents.on('did-create-window', (childWindow) => {
+    const childContents = childWindow.webContents;
+
+    // Cho phép OAuth flow hoàn tất tự nhiên trong popup
+    // Chỉ đóng popup khi đã redirect hoàn tất về trang Facebook chính
+    childContents.on('did-navigate', (event, navUrl) => {
+      // Đã đăng nhập thành công → redirect về trang Messenger/Facebook chính
+      if (navUrl.includes('facebook.com/messages') ||
+          navUrl.includes('messenger.com/t/') ||
+          navUrl.match(/facebook\.com\/?(\?|#|$)/)) {
+        // Reload BrowserView cha để nhận session mới, rồi đóng popup
+        contents.loadURL(MESSENGER_URL, { userAgent: USER_AGENT });
+        setTimeout(() => {
+          if (!childWindow.isDestroyed()) childWindow.close();
+        }, 500);
+      }
+    });
+
+    // Tự đóng nếu popup bị close bởi script (window.close())
+    childContents.on('will-prevent-unload', (event) => {
+      event.preventDefault();
+    });
   });
 
   contents.on('context-menu', (event, params) => {

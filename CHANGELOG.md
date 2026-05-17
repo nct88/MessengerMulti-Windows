@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2026-05-17
+### Sửa lỗi
+- **🔐 Sửa lỗi đăng nhập Facebook bằng Google/Apple:** Khắc phục lỗi `Error 400: redirect_uri_mismatch` khi đăng nhập Facebook qua tài khoản Google liên kết. Nguyên nhân: popup Google OAuth bị mở ra trình duyệt ngoài thay vì trong app, làm mất session và phá vỡ luồng redirect OAuth.
+
+### Cải tiến
+- **🪟 Hỗ trợ popup OAuth trong app:** Popup đăng nhập Google/Apple giờ mở như cửa sổ con bên trong ứng dụng, chia sẻ cùng session với profile đang đăng nhập. Tự động đóng khi hoàn tất.
+- **🌐 Cập nhật User-Agent:** Đồng bộ User-Agent với phiên bản Chromium 122 của Electron 29, tránh bị chặn bởi các dịch vụ đăng nhập.
+
 ## [1.3.1] - 2026-05-15
 ### Cải tiến
 - Fix một số lỗi nhỏ và cập nhật liên kết.

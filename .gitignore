@@ -3,3 +3,13 @@ dist/
 temp/
 *.log
 .env
+
+# Build & dev tools
+*.zip
+generate_icons.js
+icon.svg
+AI_PROJECT_PROMPT.md
+
+# Random/temporary files
+*.jpg
+*.jpeg
