@@ -2,6 +2,8 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <!-- CSP cho shell UI: chặn mọi inline script (phòng thủ XSS->RCE). renderer.js là file 'self'. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https: file:; connect-src 'self' https:; font-src 'self' data:;">
   <title>Messlỏ</title>
   <style>
     body, html { 
@@ -409,7 +411,7 @@
           <span id="avatar-letter" style="font-size:24px; font-weight:bold;">+</span>
           <img id="avatar-img" style="width:100%; height:100%; object-fit:cover; display:none;" />
         </div>
-        <div style="font-size:13px; color:#aaa; cursor:pointer;" onclick="document.getElementById('avatar-input').click()">Chọn ảnh đại diện<br/>(Tùy chọn)</div>
+        <div id="avatar-picker-text" style="font-size:13px; color:#aaa; cursor:pointer;">Chọn ảnh đại diện<br/>(Tùy chọn)</div>
         <input type="file" id="avatar-input" accept="image/*" style="display:none;" />
       </div>
       <input type="text" id="profile-name-input" class="modal-input" placeholder="Nhập tên hiển thị (VD: Nick Clone)" />

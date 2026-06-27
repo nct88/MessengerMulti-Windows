@@ -24,7 +24,12 @@
   <img src="preview.png" alt="Messlỏ Preview" style="max-width: 100%; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);"/>
 </p>
 
-## ✨ Tính năng nổi bật (Bản cập nhật v1.3.1)
+## ✨ Tính năng nổi bật (Bản cập nhật v1.4.2)
+
+### 🆕 Mới trong v1.4.x
+- 🛡️ **Vá bảo mật (v1.4.2)** — Khắc phục lỗ thực thi mã từ xa (RCE) qua tên file tải về và siết kiểm tra origin của popup đăng nhập; thêm Content-Security-Policy cho giao diện shell.
+- 🎁 **Sửa lỗi mở lại trang donate & 🔒 màn khoá mượt hơn (v1.4.1)** — Máy đã ủng hộ không còn bị mở lại trang donate; màn khoá lúc khởi động hết giật/nháy.
+- 🔐 **Sửa đăng nhập Facebook bằng Google/Apple (v1.4.0)** — Popup OAuth mở trong app, hết lỗi `redirect_uri_mismatch`.
 
 ### 🆕 Mới trong v1.3.1
 - 🔧 **Sửa lỗi đăng nhập sai tài khoản** — Khắc phục lỗi nghiêm trọng khi login tài khoản A nhưng hiển thị tài khoản B do session/cookie bị trộn lẫn.
@@ -72,7 +77,7 @@ File thành phẩm sẽ xuất hiện trong thư mục `dist/`.
 ```bash
 npm run build -p always
 ```
-Sau đó tạo Release mới trên Github và đính kèm 2 tệp trong thư mục `dist`: `Messlỏ Setup 1.3.1.exe` và `latest.yml`.
+Sau đó tạo Release mới trên Github và đính kèm 2 tệp trong thư mục `dist`: `Messlo-Setup-1.4.2.exe` và `latest.yml`.
 
 ## 📂 Cấu trúc dự án
 

@@ -326,16 +326,25 @@ function setupWebContents(contents, profileId) {
   // Setup download handler for this view's session
   setupDownloadHandler(contents.session);
 
-  // ── Danh sách domain được phép mở popup trong app (OAuth, login, v.v.) ──
-  const ALLOWED_POPUP_DOMAINS = [
+  // ── Host được phép mở popup trong app (OAuth, login, v.v.) ──
+  // So khớp theo HOSTNAME thật + bắt buộc HTTPS. KHÔNG dùng url.includes() vì
+  // substring khiến `https://evil.com/?ref=facebook.com` hay `facebook.com.evil.tld` cũng lọt.
+  const ALLOWED_POPUP_HOSTS = [
     'facebook.com', 'messenger.com', 'fbcdn.net',
-    'accounts.google.com', 'google.com/o/oauth2',  // Google OAuth
-    'appleid.apple.com',                            // Apple Sign-In
+    'google.com',   // Google OAuth (accounts.google.com)
+    'apple.com',    // Apple Sign-In (appleid.apple.com)
   ];
+  const isAllowedHost = (rawUrl, hosts) => {
+    let u;
+    try { u = new URL(rawUrl); } catch { return false; }
+    if (u.protocol !== 'https:') return false;
+    const host = u.hostname.toLowerCase();
+    return hosts.some(h => host === h || host.endsWith('.' + h));
+  };
 
   contents.setWindowOpenHandler(({ url }) => {
-    // Cho phép các domain OAuth/login mở popup bên trong app
-    const isAllowed = ALLOWED_POPUP_DOMAINS.some(domain => url.includes(domain));
+    // Chỉ cho phép popup từ host hợp lệ qua HTTPS; còn lại mở bằng trình duyệt ngoài
+    const isAllowed = isAllowedHost(url, ALLOWED_POPUP_HOSTS);
     if (isAllowed) {
       return {
         action: 'allow',
@@ -366,10 +375,16 @@ function setupWebContents(contents, profileId) {
     // Cho phép OAuth flow hoàn tất tự nhiên trong popup
     // Chỉ đóng popup khi đã redirect hoàn tất về trang Facebook chính
     childContents.on('did-navigate', (event, navUrl) => {
-      // Đã đăng nhập thành công → redirect về trang Messenger/Facebook chính
-      if (navUrl.includes('facebook.com/messages') ||
-          navUrl.includes('messenger.com/t/') ||
-          navUrl.match(/facebook\.com\/?(\?|#|$)/)) {
+      // Đã đăng nhập thành công → redirect về trang Messenger/Facebook chính.
+      // Xác thực HOST thật trước (không chỉ so chuỗi, tránh khớp nhầm host lạ).
+      let navHost = '';
+      try { navHost = new URL(navUrl).hostname.toLowerCase(); } catch {}
+      const backToHome =
+        (navHost === 'facebook.com' || navHost.endsWith('.facebook.com') ||
+         navHost === 'messenger.com' || navHost.endsWith('.messenger.com')) &&
+        (navUrl.includes('/messages') || navUrl.includes('/t/') ||
+         /facebook\.com\/?(\?|#|$)/.test(navUrl));
+      if (backToHome) {
         // Reload BrowserView cha để nhận session mới, rồi đóng popup
         contents.loadURL(MESSENGER_URL, { userAgent: USER_AGENT });
         setTimeout(() => {

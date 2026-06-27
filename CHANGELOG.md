@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.2] - 2026-06-27
+### Bảo mật
+- **🛡️ Vá lỗ thực thi mã từ xa (RCE) qua tên file tải về:** Tên file (do máy chủ/đối phương chat kiểm soát) trước đây được chèn thẳng vào HTML của giao diện shell (vốn có `nodeIntegration`), cho phép chạy mã tuỳ ý với toàn quyền khi panel tải tự hiển thị. Nay tên file được render an toàn bằng `textContent`, các nút bind bằng `addEventListener`, và bổ sung Content-Security-Policy chặn mọi inline script.
+- **🔒 Siết kiểm tra origin popup đăng nhập:** Thay so khớp chuỗi `url.includes()` (khiến link giả như `evil.com/?ref=facebook.com` cũng lọt) bằng so khớp **hostname** thật + bắt buộc HTTPS, tránh mở cửa sổ in-app chạy dưới phiên Facebook đã đăng nhập.
+
+### Khác
+- Gỡ dependency `ssh2` không dùng tới (giảm dung lượng installer, bớt bề mặt tấn công, bỏ bước build native).
+- Đồng bộ số phiên bản trong README/AI_PROJECT_PROMPT và cập nhật link tải trang giới thiệu (`docs/`) trỏ về bản cài đặt chính thức.
+
 ## [1.4.1] - 2026-06-27
 ### Sửa lỗi
 - **🎁 Sửa lỗi vẫn mở trang donate dù đã ủng hộ:** Bản cài đặt không kèm file `.env`, khiến app gọi nhầm endpoint API mặc định (placeholder), kiểm tra HWID luôn thất bại và mở lại trang donate **mỗi lần khởi động** — dù máy đã được ghi nhận ủng hộ. Đã đặt cứng đúng endpoint công khai trong app; nay máy đã donate được nhận diện chính xác và **không mở lại** trang donate (kết quả được cache local).

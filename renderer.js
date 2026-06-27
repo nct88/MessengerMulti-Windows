@@ -207,6 +207,7 @@ function updateAvatarPreview() {
 nameInput.addEventListener('input', updateAvatarPreview);
 
 avatarPreview.onclick = () => avatarInput.click();
+document.getElementById('avatar-picker-text').onclick = () => avatarInput.click();
 avatarInput.onchange = (e) => {
   if (e.target.files && e.target.files[0]) {
     tempAvatarPath = e.target.files[0].path;
@@ -704,8 +705,14 @@ function getFileIcon(filename) {
   return icons[ext] || '📎';
 }
 
-function showDlToast(msg) {
-  dlToast.innerHTML = msg;
+function showDlToast(prefix, filename) {
+  // prefix là nhãn cố định (an toàn); filename do máy chủ kiểm soát → chèn bằng textContent.
+  dlToast.textContent = prefix;
+  if (filename) {
+    const b = document.createElement('b');
+    b.textContent = filename;
+    dlToast.appendChild(b);
+  }
   dlToast.classList.add('show');
   setTimeout(() => dlToast.classList.remove('show'), 3000);
 }
@@ -736,30 +743,45 @@ function renderDownloads() {
       ? `${formatBytes(dl.received)} / ${formatBytes(dl.total)}`
       : (dl.received > 0 ? formatBytes(dl.received) : 'Đang tải...');
 
-    let actionsHtml = '';
-    if (dl.done && dl.state === 'completed') {
-      actionsHtml = `
-        <button class="dl-action-btn" onclick="ipcRenderer.send('open-download-file','${dl.savePath.replace(/\\/g, '\\\\')}')" title="Mở file">
-          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        </button>
-        <button class="dl-action-btn" onclick="ipcRenderer.send('open-download-folder','${dl.savePath.replace(/\\/g, '\\\\')}')" title="Mở thư mục">
-          <svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-        </button>`;
-    } else if (!dl.done) {
-      actionsHtml = `
-        <button class="dl-action-btn" onclick="ipcRenderer.send('cancel-download',${dl.id})" title="Huỷ">
-          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>`;
-    }
-
+    // Khung tĩnh — KHÔNG chứa dữ liệu untrusted (statusIcon/statusText/sizeText/pct là số/chuỗi suy ra).
     item.innerHTML = `
       <div class="dl-icon ${iconClass}">${statusIcon}</div>
       <div class="dl-info">
-        <div class="dl-filename" title="${dl.filename}">${dl.filename}</div>
+        <div class="dl-filename"></div>
         <div class="dl-meta"><span>${statusText}</span><span>·</span><span>${sizeText}</span></div>
         ${!dl.done ? `<div class="dl-progress-bar"><div class="dl-progress-fill" style="width:${pct}%"></div></div>` : ''}
       </div>
-      <div class="dl-actions">${actionsHtml}</div>`;
+      <div class="dl-actions"></div>`;
+
+    // Tên file do máy chủ/đối phương kiểm soát → gắn bằng textContent (chống XSS->RCE), KHÔNG dùng innerHTML.
+    const nameEl = item.querySelector('.dl-filename');
+    nameEl.textContent = dl.filename;
+    nameEl.setAttribute('title', dl.filename);
+
+    // Nút hành động: bind bằng addEventListener, KHÔNG nội suy savePath/id vào HTML.
+    const actionsEl = item.querySelector('.dl-actions');
+    if (dl.done && dl.state === 'completed') {
+      const openFileBtn = document.createElement('button');
+      openFileBtn.className = 'dl-action-btn';
+      openFileBtn.title = 'Mở file';
+      openFileBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+      openFileBtn.addEventListener('click', () => ipcRenderer.send('open-download-file', dl.savePath));
+
+      const openFolderBtn = document.createElement('button');
+      openFolderBtn.className = 'dl-action-btn';
+      openFolderBtn.title = 'Mở thư mục';
+      openFolderBtn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>';
+      openFolderBtn.addEventListener('click', () => ipcRenderer.send('open-download-folder', dl.savePath));
+
+      actionsEl.append(openFileBtn, openFolderBtn);
+    } else if (!dl.done) {
+      const cancelBtn = document.createElement('button');
+      cancelBtn.className = 'dl-action-btn';
+      cancelBtn.title = 'Huỷ';
+      cancelBtn.innerHTML = '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      cancelBtn.addEventListener('click', () => ipcRenderer.send('cancel-download', dl.id));
+      actionsEl.append(cancelBtn);
+    }
 
     dlList.insertBefore(item, dlEmpty);
   });
@@ -774,7 +796,7 @@ ipcRenderer.on('download-started', (event, data) => {
     dlPanelOpen = true;
     dlPanel.style.display = 'flex';
   }
-  showDlToast(`⬇️ Bắt đầu tải: <b>${data.filename}</b>`);
+  showDlToast('⬇️ Bắt đầu tải: ', data.filename);
 });
 
 ipcRenderer.on('download-progress', (event, data) => {
@@ -803,9 +825,9 @@ ipcRenderer.on('download-done', (event, data) => {
     dl.savePath = data.savePath || dl.savePath;
     renderDownloads();
     if (data.state === 'completed') {
-      showDlToast(`✅ Đã tải xong: <b>${data.filename}</b>`);
+      showDlToast('✅ Đã tải xong: ', data.filename);
     } else {
-      showDlToast(`❌ Tải thất bại: <b>${data.filename}</b>`);
+      showDlToast('❌ Tải thất bại: ', data.filename);
     }
   }
 });
