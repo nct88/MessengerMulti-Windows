@@ -19,6 +19,10 @@ if (profiles.length === 0) {
 }
 
 let activeProfileId = profiles[0].id;
+// Đánh dấu BrowserView (Messenger) đã được tạo/nạp hay chưa.
+// Khi khởi động ở trạng thái khóa, ta HOÃN nạp Messenger tới khi mở khóa
+// để màn khóa hiện ra mượt (không có web nặng load phía sau gây giật).
+let viewInitialized = false;
 
 function saveProfiles() {
   localStorage.setItem('mp_profiles', JSON.stringify(profiles));
@@ -156,6 +160,7 @@ function switchProfile(id) {
   const p = profiles.find(x => x.id === id);
   if (p) {
     ipcRenderer.send('switch-profile', p);
+    viewInitialized = true;
   }
 }
 
@@ -384,7 +389,12 @@ if(settings.alwaysOnTop) {
 }
 
 renderSidebar();
-switchProfile(activeProfileId);
+// Nếu sẽ khóa ngay khi khởi động thì HOÃN nạp Messenger (nạp sau khi mở khóa),
+// để màn khóa hiện ra mượt và không lộ nội dung khi đang khóa.
+const startLocked = !!(settings.appLockEnabled && settings.appLockHash);
+if (!startLocked) {
+  switchProfile(activeProfileId);
+}
 
 // ============================================================
 //  APP LOCK MODULE
@@ -416,7 +426,9 @@ function lockApp(mode) {
   lock.setupPin = '';
   lock.isLocked = true;
   lockScreen.classList.add('active');
-  ipcRenderer.send('set-browserview-visibility', false);
+  // Gỡ BrowserView ĐỒNG BỘ (sendSync) trước khi vẽ khung tiếp theo để màn
+  // khóa không bị nháy nội dung Messenger phía trên — hết "chậm nhịp" khi khóa.
+  ipcRenderer.sendSync('set-browserview-visibility', false);
   updatePinDots();
 
   if (mode === 'setup') {
@@ -435,7 +447,12 @@ function unlockApp() {
   lock.enteredPin = '';
   lock.wrongAttempts = 0;
   lockScreen.classList.remove('active');
-  ipcRenderer.send('set-browserview-visibility', true);
+  if (!viewInitialized) {
+    // Khởi động ở trạng thái khóa: giờ mới nạp Messenger lần đầu.
+    switchProfile(activeProfileId);
+  } else {
+    ipcRenderer.send('set-browserview-visibility', true);
+  }
   resetIdleTimer();
 }
 
@@ -630,7 +647,7 @@ function resetIdleTimer() {
 // ============================================================
 //  INIT LOCK — Lock on startup if enabled
 // ============================================================
-if (settings.appLockEnabled && settings.appLockHash) {
+if (startLocked) {
   lockApp('verify');
 }
 resetIdleTimer();

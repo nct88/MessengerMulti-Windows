@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1] - 2026-06-27
+### Sửa lỗi
+- **🎁 Sửa lỗi vẫn mở trang donate dù đã ủng hộ:** Bản cài đặt không kèm file `.env`, khiến app gọi nhầm endpoint API mặc định (placeholder), kiểm tra HWID luôn thất bại và mở lại trang donate **mỗi lần khởi động** — dù máy đã được ghi nhận ủng hộ. Đã đặt cứng đúng endpoint công khai trong app; nay máy đã donate được nhận diện chính xác và **không mở lại** trang donate (kết quả được cache local).
+- **🔒 Sửa màn khoá bị giật/nháy khi mở:** Khi khởi động ở trạng thái khoá, app **hoãn nạp Messenger** tới khi mở khoá — màn khoá hiện ra mượt, không còn giật và không lộ nội dung khi đang khoá. Khi khoá, khung Messenger được gỡ **đồng bộ** nên không còn nháy nội dung phía trên màn khoá.
+
 ## [1.4.0] - 2026-05-17
 ### Sửa lỗi
 - **🔐 Sửa lỗi đăng nhập Facebook bằng Google/Apple:** Khắc phục lỗi `Error 400: redirect_uri_mismatch` khi đăng nhập Facebook qua tài khoản Google liên kết. Nguyên nhân: popup Google OAuth bị mở ra trình duyệt ngoài thay vì trong app, làm mất session và phá vỡ luồng redirect OAuth.

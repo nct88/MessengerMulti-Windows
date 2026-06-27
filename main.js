@@ -700,13 +700,17 @@ function createWindow() {
   });
 
   ipcMain.on('set-browserview-visibility', (event, visible) => {
-    if (!mainWindow) return;
-    if (visible && activeProfileId && browserViews[activeProfileId]) {
-      mainWindow.setBrowserView(browserViews[activeProfileId]);
-      updateBrowserViewBounds();
-    } else {
-      mainWindow.setBrowserView(null);
+    if (mainWindow) {
+      if (visible && activeProfileId && browserViews[activeProfileId]) {
+        mainWindow.setBrowserView(browserViews[activeProfileId]);
+        updateBrowserViewBounds();
+      } else {
+        mainWindow.setBrowserView(null);
+      }
     }
+    // Cho phép gọi bằng sendSync: renderer chặn tới khi view đã được gỡ,
+    // nhờ đó màn khóa hiện ra không bị "nháy" nội dung Messenger phía trên.
+    event.returnValue = true;
   });
 
   ipcMain.on('delete-profile', (event, id) => {
@@ -882,7 +886,12 @@ app.whenReady().then(() => {
       const { execSync } = require('child_process');
       const https = require('https');
 
-      // Bước 0: Lấy HWID máy hiện tại
+      // Bước 0: Lấy HWID máy hiện tại.
+      // GIỮ NGUYÊN cách tính cũ (wmic UUID trước, fallback MachineGuid) và
+      // tính lại MỖI lần chạy — KHÔNG cache/persist HWID. Lý do: server donate
+      // đang khớp theo đúng giá trị app tính hiện tại; nếu lưu cứng một giá trị
+      // (vd freeze MachineGuid lúc wmic vừa bị gỡ ở Win11 24H2) thì donor từng
+      // donate dưới UUID wmic sẽ bị khóa cứng "chưa donate" vĩnh viễn.
       let hwid = 'UNKNOWN';
       try {
         hwid = execSync('wmic csproduct get UUID', { encoding: 'utf8' })
@@ -917,11 +926,16 @@ app.whenReady().then(() => {
       if (shouldShowDonate) {
         try {
           const apiResult = await new Promise((resolve, reject) => {
-            let apiUrl = 'https://donate-api.example.com/donate_check';
+            // URL công khai (không phải secret). Đặt mặc định cứng ở đây vì
+            // file `.env` KHÔNG được đóng gói vào bản build (không nằm trong
+            // build.files) — nếu chỉ dựa vào .env thì bản cài đặt sẽ gọi sai
+            // endpoint, API luôn lỗi và app mở lại tab donate mỗi lần khởi động.
+            // .env chỉ dùng để override khi chạy dev.
+            let apiUrl = 'https://api.truong.me/donate_check';
             try {
               const envData = fs.readFileSync(path.join(__dirname, '.env'), 'utf8');
               const match = envData.match(/DONATE_API_URL=(.+)/);
-              if (match) apiUrl = match[1].trim();
+              if (match && match[1].trim()) apiUrl = match[1].trim();
             } catch (e) {}
 
             const url = `${apiUrl}?hwid=${encodeURIComponent(hwid)}`;
