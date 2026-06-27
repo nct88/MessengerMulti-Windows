@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.3] - 2026-06-27
+### Thay đổi
+- **Gỡ bỏ tính năng tự mở trang donate:** App không còn tự mở trang ủng hộ khi khởi động. Đã loại bỏ toàn bộ phần kiểm tra HWID + gọi API + mở trang donate trong tiến trình chính.
+
 ## [1.4.2] - 2026-06-27
 ### Bảo mật
 - **🛡️ Vá lỗ thực thi mã từ xa (RCE) qua tên file tải về:** Tên file (do máy chủ/đối phương chat kiểm soát) trước đây được chèn thẳng vào HTML của giao diện shell (vốn có `nodeIntegration`), cho phép chạy mã tuỳ ý với toàn quyền khi panel tải tự hiển thị. Nay tên file được render an toàn bằng `textContent`, các nút bind bằng `addEventListener`, và bổ sung Content-Security-Policy chặn mọi inline script.
